@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Background } from "./components/Background";
-import { CompletionDialog, LoginModal, RestDialog, Toast } from "./components/Dialogs";
+import { LoginModal, RestDialog, Toast } from "./components/Dialogs";
 import { Hero } from "./components/Hero";
+import { ReviewDialog } from "./components/ReviewDialog";
+import { createShareText, ShareCard } from "./components/ShareCard";
 import { TopNav } from "./components/TopNav";
 import { scenes, STORAGE_KEYS } from "./data/focusRoomData";
 import { useFocusAudio } from "./hooks/useFocusAudio";
 import { useFocusSession } from "./hooks/useFocusSession";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { usePomodoroTimer } from "./hooks/usePomodoroTimer";
-import { useSessionReviews } from "./hooks/useSessionReviews";
+import { useStudyHistory } from "./hooks/useStudyHistory";
 import { useStudyStats } from "./hooks/useStudyStats";
 import { ControlRoom } from "./views/ControlRoom";
 import { FocusMode } from "./views/FocusMode";
@@ -29,13 +31,15 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [isResting, setIsResting] = useState(false);
   const [restSecondsLeft, setRestSecondsLeft] = useState(5 * 60);
+  const [pendingReviewRecord, setPendingReviewRecord] = useState(null);
+  const [selectedShareRecord, setSelectedShareRecord] = useState(null);
   const recordedCompletionRef = useRef(false);
   const didRestoreSessionRef = useRef(false);
 
   const currentScene = useMemo(() => scenes.find((scene) => scene.id === storedSceneId) || scenes[0], [storedSceneId]);
   const timer = usePomodoroTimer(pomodoro.duration);
   const { stats, recordSession } = useStudyStats();
-  const { reviews, addReview } = useSessionReviews();
+  const studyHistory = useStudyHistory();
   const focusSession = useFocusSession();
   const { isAudioOn, startAudio, stopAudio } = useFocusAudio(currentScene, sound);
 
@@ -90,7 +94,16 @@ export default function App() {
       if (hasActiveSession) {
         const actualSeconds = focusSession.session.plannedSeconds || (pomodoro.duration || 50) * 60;
         recordSession(actualSeconds, { completedRound: true });
+        const record = studyHistory.addRecord({
+          goal: focusSession.session.goal || goal,
+          sceneName: currentScene.title,
+          durationSeconds: actualSeconds,
+          isCompletedRound: true
+        });
         focusSession.completeSession(actualSeconds);
+        stopAudio();
+        setIsFocusMode(false);
+        setPendingReviewRecord(record);
       }
       recordedCompletionRef.current = true;
     }
@@ -162,17 +175,7 @@ export default function App() {
     const plannedSeconds = (pomodoro.duration || 50) * 60;
     timer.clearCompleted();
     focusSession.startSession({ durationMinutes: pomodoro.duration || 50, goal, sceneId: currentScene.id });
-    setIsResting(false);
-    await startAudio(currentScene);
-    setIsFocusMode(true);
-    timer.start(plannedSeconds);
-  };
-
-  const restartRound = async () => {
-    const plannedSeconds = (pomodoro.duration || 50) * 60;
-    timer.reset();
-    focusSession.clearSession();
-    focusSession.startSession({ durationMinutes: pomodoro.duration || 50, goal, sceneId: currentScene.id });
+    setPendingReviewRecord(null);
     setIsResting(false);
     await startAudio(currentScene);
     setIsFocusMode(true);
@@ -182,7 +185,16 @@ export default function App() {
   const endStudy = () => {
     if (focusSession.session.isActive && timer.completionReason !== "skipped") {
       const actualSeconds = focusSession.getActualSeconds(timer.secondsLeft, pomodoro.duration);
-      if (actualSeconds >= 60) recordSession(actualSeconds, { completedRound: false });
+      if (actualSeconds >= 60) {
+        recordSession(actualSeconds, { completedRound: false });
+        const record = studyHistory.addRecord({
+          goal: focusSession.session.goal || goal,
+          sceneName: currentScene.title,
+          durationSeconds: actualSeconds,
+          isCompletedRound: false
+        });
+        setPendingReviewRecord(record);
+      }
     }
     timer.reset();
     focusSession.clearSession();
@@ -191,39 +203,48 @@ export default function App() {
     setIsFocusMode(false);
   };
 
-  const saveSessionReview = (reflection) => {
-    addReview({
-      goal: focusSession.session.goal || goal,
-      sceneTitle: currentScene.title,
-      durationMinutes: focusSession.session.durationMinutes || pomodoro.duration,
-      actualSeconds: focusSession.session.actualSeconds || focusSession.session.plannedSeconds || (pomodoro.duration || 50) * 60,
-      completed: true,
-      reflection
-    });
-  };
-
-  const closeCompletedSession = () => {
+  const closeReviewFlow = () => {
+    setPendingReviewRecord(null);
     timer.reset();
     focusSession.clearSession();
     stopAudio();
     setIsFocusMode(false);
   };
 
-  const startRest = () => {
-    timer.clearCompleted();
-    timer.pause();
-    focusSession.clearSession();
-    stopAudio();
-    setRestSecondsLeft(5 * 60);
-    setIsResting(true);
-    setIsFocusMode(false);
+  const saveReview = (review) => {
+    if (!pendingReviewRecord) return null;
+    const updatedRecord = studyHistory.updateReview(pendingReviewRecord.id, review);
+    if (updatedRecord) setPendingReviewRecord(updatedRecord);
+    return updatedRecord;
+  };
+
+  const skipReview = () => {
+    if (!pendingReviewRecord) return null;
+    const skippedRecord = studyHistory.skipReview(pendingReviewRecord.id);
+    return skippedRecord || pendingReviewRecord;
+  };
+
+  const copyShareText = async (record) => {
+    try {
+      await navigator.clipboard.writeText(createShareText(record));
+      showToast("分享文案已复制");
+    } catch {
+      showToast("复制失败，请手动复制卡片内容");
+    }
   };
 
   return (
     <>
       <Background scene={currentScene} lowPerformance={preferences.lowPerformance} />
       <Toast message={toast} />
-      {timer.timerCompleted && timer.completionReason === "natural" && (focusSession.session.isActive || focusSession.session.isCompleted) && <CompletionDialog onRestart={restartRound} onRest={startRest} onClose={closeCompletedSession} onSaveReview={saveSessionReview} stats={stats} />}
+      {pendingReviewRecord && <ReviewDialog record={pendingReviewRecord} onSave={saveReview} onSkip={skipReview} onClose={closeReviewFlow} onCopyShare={copyShareText} />}
+      {selectedShareRecord && (
+        <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/58 px-3 py-5 backdrop-blur-sm">
+          <div className="w-full max-w-2xl">
+            <ShareCard record={selectedShareRecord} onCopy={copyShareText} onClose={() => setSelectedShareRecord(null)} />
+          </div>
+        </div>
+      )}
       {isResting && <RestDialog secondsLeft={restSecondsLeft} onSkip={() => setIsResting(false)} />}
       {isLoginOpen && <LoginModal onClose={() => setIsLoginOpen(false)} />}
       {isFocusMode ? (
@@ -233,7 +254,7 @@ export default function App() {
           <TopNav activePanel={activePanel} setActivePanel={setActivePanel} onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })} onOpenLogin={() => setIsLoginOpen(true)} />
           <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <Hero currentScene={currentScene} onStart={enterFocus} />
-            <ControlRoom activePanel={activePanel} setActivePanel={setActivePanel} currentScene={currentScene} setScene={setScene} sound={sound} setSound={setSound} pomodoro={pomodoro} setPomodoro={setPomodoro} timer={timer} goal={goal} setGoal={setGoal} onStart={enterFocus} onEndStudy={endStudy} isAudioOn={isAudioOn} onPreviewAudio={() => startAudio(currentScene)} onStopAudio={stopAudio} stats={stats} reviews={reviews} preferences={preferences} setPreferences={setPreferences} />
+            <ControlRoom activePanel={activePanel} setActivePanel={setActivePanel} currentScene={currentScene} setScene={setScene} sound={sound} setSound={setSound} pomodoro={pomodoro} setPomodoro={setPomodoro} timer={timer} goal={goal} setGoal={setGoal} onStart={enterFocus} onEndStudy={endStudy} isAudioOn={isAudioOn} onPreviewAudio={() => startAudio(currentScene)} onStopAudio={stopAudio} stats={stats} historyRecords={studyHistory.recentRecords} onOpenShareCard={setSelectedShareRecord} preferences={preferences} setPreferences={setPreferences} />
           </main>
         </>
       )}

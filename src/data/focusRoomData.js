@@ -8,7 +8,7 @@ export const STORAGE_KEYS = {
   stats: "focusroom.studyStats",
   preferences: "focusroom.preferences",
   session: "focusroom.focusSession",
-  reviews: "focusroom.sessionReviews"
+  history: "focusroom.studyHistory"
 };
 
 export const scenes = [

@@ -3,6 +3,7 @@ import { formatTime } from "../utils/time";
 import { GoalPanel } from "../components/GoalPanel";
 import { SceneSelector } from "../components/SceneSelector";
 import { SoundPanel } from "../components/SoundPanel";
+import { StudyHistoryPanel } from "../components/StudyHistoryPanel";
 import { TimerPanel } from "../components/TimerPanel";
 
 function StudyStats({ stats }) {
@@ -23,24 +24,7 @@ function GoalSummary({ goal }) {
   );
 }
 
-function ReviewSummary({ reviews }) {
-  const latest = reviews?.[0];
-  return (
-    <div className="mt-4 rounded-3xl border border-white/12 bg-black/20 p-4">
-      <p className="text-sm text-white/54">最近复盘</p>
-      {latest ? (
-        <div className="mt-2 space-y-1 text-sm leading-6 text-white/68">
-          <p className="line-clamp-1 text-white/82">{latest.reflection.completed || "已保存一条复盘"}</p>
-          <p className="line-clamp-1">下一步：{latest.reflection.next || "待补充"}</p>
-        </div>
-      ) : (
-        <p className="mt-2 text-sm leading-6 text-white/56">完成一轮后可以记录收获、阻塞和下一步。</p>
-      )}
-    </div>
-  );
-}
-
-export function ControlRoom({ activePanel, setActivePanel, currentScene, setScene, sound, setSound, pomodoro, setPomodoro, timer, goal, setGoal, onStart, onEndStudy, isAudioOn, onPreviewAudio, onStopAudio, stats, reviews, preferences, setPreferences }) {
+export function ControlRoom({ activePanel, setActivePanel, currentScene, setScene, sound, setSound, pomodoro, setPomodoro, timer, goal, setGoal, onStart, onEndStudy, isAudioOn, onPreviewAudio, onStopAudio, stats, historyRecords, onOpenShareCard, preferences, setPreferences }) {
   const panelTitle = { scene: "选择学习场景", music: "声音设置", plan: "番茄钟与今日目标", member: "会员计划" }[activePanel];
   const panelLinks = [["scene", "场景"], ["music", "音乐"], ["plan", "计划"], ["member", "会员"]];
 
@@ -65,7 +49,7 @@ export function ControlRoom({ activePanel, setActivePanel, currentScene, setScen
         <img src={currentScene.image} alt={currentScene.title} className="mt-5 aspect-[16/10] w-full rounded-3xl object-cover" />
         <StudyStats stats={stats} />
         <GoalSummary goal={goal} />
-        <ReviewSummary reviews={reviews} />
+        <StudyHistoryPanel records={historyRecords} onOpenShare={onOpenShareCard} />
         <div className="mt-4 rounded-3xl border border-white/12 bg-black/20 p-4"><p className="text-sm text-white/54">下一轮时长</p><p className="mt-2 text-3xl font-semibold tabular-nums text-white sm:text-4xl">{formatTime((pomodoro.duration || 50) * 60)}</p><p className="mt-1 text-sm text-white/54">{pomodoro.duration} 分钟 · 从自习室模式开始计时</p></div>
         <label className="mt-4 flex cursor-pointer items-center justify-between rounded-2xl border border-white/12 bg-black/20 p-3 text-sm text-white/70"><span>低性能模式</span><input type="checkbox" checked={preferences.lowPerformance} onChange={(event) => setPreferences((prev) => ({ ...prev, lowPerformance: event.target.checked }))} /></label>
         <button onClick={onStart} className="focus-button primary-button mt-4 w-full">进入自习室模式</button>

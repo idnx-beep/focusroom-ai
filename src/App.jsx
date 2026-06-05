@@ -239,7 +239,7 @@ export default function App() {
       <Toast message={toast} />
       {pendingReviewRecord && <ReviewDialog record={pendingReviewRecord} onSave={saveReview} onSkip={skipReview} onClose={closeReviewFlow} onCopyShare={copyShareText} />}
       {selectedShareRecord && (
-        <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/58 px-3 py-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 grid items-start justify-items-center overflow-y-auto bg-black/58 px-3 py-4 backdrop-blur-sm sm:items-center sm:py-6">
           <div className="w-full max-w-2xl">
             <ShareCard record={selectedShareRecord} onCopy={copyShareText} onClose={() => setSelectedShareRecord(null)} />
           </div>
@@ -252,7 +252,7 @@ export default function App() {
       ) : (
         <>
           <TopNav activePanel={activePanel} setActivePanel={setActivePanel} onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })} onOpenLogin={() => setIsLoginOpen(true)} />
-          <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <main className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
             <Hero currentScene={currentScene} onStart={enterFocus} />
             <ControlRoom activePanel={activePanel} setActivePanel={setActivePanel} currentScene={currentScene} setScene={setScene} sound={sound} setSound={setSound} pomodoro={pomodoro} setPomodoro={setPomodoro} timer={timer} goal={goal} setGoal={setGoal} onStart={enterFocus} onEndStudy={endStudy} isAudioOn={isAudioOn} onPreviewAudio={() => startAudio(currentScene)} onStopAudio={stopAudio} stats={stats} historyRecords={studyHistory.recentRecords} onOpenShareCard={setSelectedShareRecord} preferences={preferences} setPreferences={setPreferences} />
           </main>

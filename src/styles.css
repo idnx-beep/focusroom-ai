@@ -23,7 +23,9 @@ body {
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
 }
 
@@ -41,7 +43,7 @@ input[type="range"] {
   }
 
   .focus-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:border-sky-200/60 hover:bg-white/15 active:translate-y-0;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:border-sky-200/60 hover:bg-white/15 active:translate-y-0;
   }
 
   .primary-button {

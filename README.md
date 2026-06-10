@@ -4,6 +4,13 @@ FocusRoom AI 是一个沉浸式 AI 自习室网页原型，面向 Study With Me�
 
 > 说明：当前项目名保留 FocusRoom AI，但尚未接入真实 AI API。现阶段的 AI 相关能力是基于本地规则生成的学习计划草稿；后续可接入 AI API，用于目标拆解、学习复盘总结和场景推荐。
 
+## Live Demo
+
+- 在线预览：[https://idnx-beep.github.io/focusroom-ai/](https://idnx-beep.github.io/focusroom-ai/)
+- 产品说明：[PRODUCT.md](PRODUCT.md)
+- 设计规范：[DESIGN.md](DESIGN.md)
+- QA 清单：[docs/qa.md](docs/qa.md)
+
 ## Screenshots
 
 ### 首页与场景氛围
@@ -17,6 +24,8 @@ FocusRoom AI 是一个沉浸式 AI 自习室网页原型，面向 Study With Me�
 ### 场景与控制台
 
 ![FocusRoom AI 控制台](docs/screenshots/control-room.png)
+
+> 截图目录位于 `docs/screenshots/`。当前已包含首页、控制台和自习室模式截图。后续建议补充复盘弹窗、分享卡片和移动端页面截图。
 
 ## Core Features
 
@@ -46,6 +55,7 @@ FocusRoom AI 是一个沉浸式 AI 自习室网页原型，面向 Study With Me�
 
 - [PRODUCT.md](PRODUCT.md)：产品定位、核心流程、已实现功能、边界和后续扩展方向。
 - [DESIGN.md](DESIGN.md)：当前视觉语言、组件设计原则、移动端原则和后续 polish 注意事项。
+- [docs/qa.md](docs/qa.md)：发布前手动测试清单，覆盖桌面端、移动端、番茄钟、复盘分享、localStorage 和 GitHub Pages。
 
 ## Getting Started
 
@@ -95,7 +105,8 @@ focusroom-ai/
 ├── public/
 │   └── scenes/              # WebP 场景图资源
 ├── docs/
-│   └── screenshots/         # README 截图占位目录
+│   ├── qa.md                # 发布前手动 QA 清单
+│   └── screenshots/         # README 截图目录
 ├── src/
 │   ├── components/          # 通用 UI 组件
 │   ├── data/                # 场景、声音、localStorage key 等本地数据

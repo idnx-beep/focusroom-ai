@@ -4,7 +4,7 @@ import { formatTime } from "../utils/time";
 
 export function FocusMode({ scene, sound, setSound, isAudioOn, goal, pomodoro, secondsLeft, isRunning, onToggleTimer, onEndStudy, stats, onPreviewAudio, onStopAudio }) {
   return (
-    <main className="min-h-dvh px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+    <main id="main-content" className="min-h-dvh px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100dvh-32px)] max-w-7xl flex-col sm:min-h-[calc(100dvh-40px)]">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
           <div className="glass-chip max-w-full rounded-full px-3 py-2 text-xs text-white/76 sm:px-4 sm:py-3 sm:text-sm"><span className="inline-block max-w-[76vw] truncate align-bottom sm:max-w-none">FocusRoom AI · {scene.title}</span></div>

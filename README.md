@@ -74,13 +74,14 @@ npm run preview
 
 部署流程：
 
-1. 本地执行 `npm run build` 生成 `dist`。
-2. 将 `dist` 内容推送到 `gh-pages` 分支。
-3. 在 GitHub 仓库中打开 `Settings -> Pages`。
-4. Source 选择 `Deploy from a branch`。
-5. Branch 选择 `gh-pages`，目录选择 `/ root`。
+1. 确认依赖已安装：`npm install`。
+2. 执行 `npm run deploy`。
+3. 脚本会先运行 `npm run build`，再通过 `gh-pages -d dist` 发布构建产物。
+4. 在 GitHub 仓库中打开 `Settings -> Pages`。
+5. Source 选择 `Deploy from a branch`。
+6. Branch 选择 `gh-pages`，目录选择 `/ root`。
 
-由于项目使用 Vite，并且可能部署在 `https://username.github.io/repo-name/` 这类子路径下，`vite.config.js` 已设置 `base: "./"`，静态场景图也使用 `import.meta.env.BASE_URL` 生成路径。
+由于项目部署在 `https://idnx-beep.github.io/focusroom-ai/` 子路径下，`vite.config.js` 已设置 `base: "/focusroom-ai/"`，静态场景图也使用 `import.meta.env.BASE_URL` 生成路径。`dist/` 只作为发布产物生成和推送到 `gh-pages` 分支，不需要提交到 `main`。
 
 ## Project Structure
 
@@ -132,7 +133,7 @@ focusroom-ai/
 - 增加真实音频素材：替换或混合 Web Audio 合成音，提高音质。
 - 增加结束确认与中断原因：让部分学习统计更准确。
 - 增强移动端 HUD：进一步压缩声音控制和统计模块。
-- 增加可访问性优化：键盘焦点、aria 文案和对比度检查。
+- 增加更完整的可访问性验证：对比度审查、焦点顺序检查和屏幕阅读器流程走查。
 
 ## Notes
 

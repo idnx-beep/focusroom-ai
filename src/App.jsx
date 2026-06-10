@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Background } from "./components/Background";
-import { LoginModal, RestDialog, Toast } from "./components/Dialogs";
+import { EndFocusConfirmDialog, LoginModal, RestDialog, Toast } from "./components/Dialogs";
 import { Hero } from "./components/Hero";
 import { ReviewDialog } from "./components/ReviewDialog";
 import { createShareText, ShareCard } from "./components/ShareCard";
@@ -30,6 +30,7 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [isResting, setIsResting] = useState(false);
+  const [isEndConfirmOpen, setIsEndConfirmOpen] = useState(false);
   const [restSecondsLeft, setRestSecondsLeft] = useState(5 * 60);
   const [pendingReviewRecord, setPendingReviewRecord] = useState(null);
   const [selectedShareRecord, setSelectedShareRecord] = useState(null);
@@ -103,6 +104,7 @@ export default function App() {
         focusSession.completeSession(actualSeconds);
         stopAudio();
         setIsFocusMode(false);
+        setIsEndConfirmOpen(false);
         setPendingReviewRecord(record);
       }
       recordedCompletionRef.current = true;
@@ -151,15 +153,16 @@ export default function App() {
         if (isFocusMode) toggleFocusTimer();
       }
       if (event.key === "Escape") {
-        if (isLoginOpen) setIsLoginOpen(false);
+        if (isEndConfirmOpen) setIsEndConfirmOpen(false);
+        else if (isLoginOpen) setIsLoginOpen(false);
         else if (isResting) setIsResting(false);
-        else if (isFocusMode) endStudy();
+        else if (isFocusMode) requestEndStudy();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFocusMode, isLoginOpen, isResting, timer.isRunning, timer.secondsLeft]);
+  }, [isFocusMode, isEndConfirmOpen, isLoginOpen, isResting, timer.isRunning, timer.secondsLeft]);
 
   const showToast = (message) => {
     setToast(message);
@@ -183,6 +186,7 @@ export default function App() {
   };
 
   const endStudy = () => {
+    setIsEndConfirmOpen(false);
     if (focusSession.session.isActive && timer.completionReason !== "skipped") {
       const actualSeconds = focusSession.getActualSeconds(timer.secondsLeft, pomodoro.duration);
       if (actualSeconds >= 60) {
@@ -203,7 +207,16 @@ export default function App() {
     setIsFocusMode(false);
   };
 
+  const requestEndStudy = () => {
+    if (focusSession.session.isActive && !timer.timerCompleted) {
+      setIsEndConfirmOpen(true);
+      return;
+    }
+    endStudy();
+  };
+
   const closeReviewFlow = () => {
+    setIsEndConfirmOpen(false);
     setPendingReviewRecord(null);
     timer.reset();
     focusSession.clearSession();
@@ -236,8 +249,10 @@ export default function App() {
   return (
     <>
       <Background scene={currentScene} lowPerformance={preferences.lowPerformance} />
+      <a href="#main-content" className="skip-link">跳到主要内容</a>
       <Toast message={toast} />
       {pendingReviewRecord && <ReviewDialog record={pendingReviewRecord} onSave={saveReview} onSkip={skipReview} onClose={closeReviewFlow} onCopyShare={copyShareText} />}
+      {isEndConfirmOpen && <EndFocusConfirmDialog onCancel={() => setIsEndConfirmOpen(false)} onConfirm={endStudy} />}
       {selectedShareRecord && (
         <div className="fixed inset-0 z-50 grid items-start justify-items-center overflow-y-auto bg-black/58 px-3 py-4 backdrop-blur-sm sm:items-center sm:py-6">
           <div className="w-full max-w-2xl">
@@ -248,13 +263,13 @@ export default function App() {
       {isResting && <RestDialog secondsLeft={restSecondsLeft} onSkip={() => setIsResting(false)} />}
       {isLoginOpen && <LoginModal onClose={() => setIsLoginOpen(false)} />}
       {isFocusMode ? (
-        <FocusMode scene={currentScene} sound={sound} setSound={setSound} isAudioOn={isAudioOn} goal={goal} pomodoro={pomodoro} secondsLeft={timer.secondsLeft} isRunning={timer.isRunning} onToggleTimer={toggleFocusTimer} onEndStudy={endStudy} stats={stats} onPreviewAudio={() => startAudio(currentScene)} onStopAudio={stopAudio} />
+        <FocusMode scene={currentScene} sound={sound} setSound={setSound} isAudioOn={isAudioOn} goal={goal} pomodoro={pomodoro} secondsLeft={timer.secondsLeft} isRunning={timer.isRunning} onToggleTimer={toggleFocusTimer} onEndStudy={requestEndStudy} stats={stats} onPreviewAudio={() => startAudio(currentScene)} onStopAudio={stopAudio} />
       ) : (
         <>
           <TopNav activePanel={activePanel} setActivePanel={setActivePanel} onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })} onOpenLogin={() => setIsLoginOpen(true)} />
-          <main className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <main id="main-content" className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
             <Hero currentScene={currentScene} onStart={enterFocus} />
-            <ControlRoom activePanel={activePanel} setActivePanel={setActivePanel} currentScene={currentScene} setScene={setScene} sound={sound} setSound={setSound} pomodoro={pomodoro} setPomodoro={setPomodoro} timer={timer} goal={goal} setGoal={setGoal} onStart={enterFocus} onEndStudy={endStudy} isAudioOn={isAudioOn} onPreviewAudio={() => startAudio(currentScene)} onStopAudio={stopAudio} stats={stats} historyRecords={studyHistory.recentRecords} onOpenShareCard={setSelectedShareRecord} preferences={preferences} setPreferences={setPreferences} />
+            <ControlRoom activePanel={activePanel} setActivePanel={setActivePanel} currentScene={currentScene} setScene={setScene} sound={sound} setSound={setSound} pomodoro={pomodoro} setPomodoro={setPomodoro} timer={timer} goal={goal} setGoal={setGoal} onStart={enterFocus} onEndStudy={requestEndStudy} isAudioOn={isAudioOn} onPreviewAudio={() => startAudio(currentScene)} onStopAudio={stopAudio} stats={stats} historyRecords={studyHistory.recentRecords} onOpenShareCard={setSelectedShareRecord} preferences={preferences} setPreferences={setPreferences} />
           </main>
         </>
       )}

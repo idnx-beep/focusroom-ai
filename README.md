@@ -13,47 +13,48 @@ FocusRoom AI 是一个沉浸式 AI 自习室网页原型，面向 Study With Me�
 
 ## Screenshots
 
-### 首页 Hero
+### 桌面端预览
+
+#### 首页 Hero
 
 ![FocusRoom AI 首页 Hero](docs/screenshots/home.png)
 
 沉浸式首屏、场景预览和清晰的开始专注入口。
 
-### 控制台
+#### 控制台
 
 ![FocusRoom AI 控制台](docs/screenshots/control-room.png)
 
 选择学习场景、设置今日目标，并查看声音、时长和学习历史。
 
-### 自习室模式
+#### 自习室模式
 
 ![FocusRoom AI 专注模式](docs/screenshots/focus-mode.png)
 
 全屏倒计时、背景声控制和当前目标保持在同一个沉浸空间里。
 
-### 复盘弹窗
+### 学习闭环
+
+#### 复盘弹窗
 
 ![FocusRoom AI 复盘弹窗](docs/screenshots/review-dialog.png)
 
 结束一轮学习后记录完成内容、卡点和下一轮计划。
 
-### 分享卡片
+#### 分享卡片
 
 ![FocusRoom AI 分享卡片](docs/screenshots/share-card.png)
 
 把本轮专注时长、场景、目标和复盘摘要整理成可复制的成果卡片。
 
-### 移动端首页
+### 移动端适配
 
-![FocusRoom AI 移动端首页](docs/screenshots/mobile-home.jpg)
+手机端保留首屏沉浸感，倒计时、暂停/继续、结束和声音控制保持可读可点。
 
-手机端保留首屏沉浸感，并将流程说明和控制台自然纵向排列。
-
-### 移动端自习室
-
-![FocusRoom AI 移动端自习室](docs/screenshots/mobile-focus-mode.jpg)
-
-移动端倒计时、暂停/继续、结束和声音控制保持可读可点。
+<p>
+  <img src="docs/screenshots/mobile-home.jpg" alt="FocusRoom AI 移动端首页" width="260" />
+  <img src="docs/screenshots/mobile-focus-mode.jpg" alt="FocusRoom AI 移动端自习室模式" width="260" />
+</p>
 
 > 截图目录位于 `docs/screenshots/`。旧版截图保留为 `legacy-*` 文件，README 主展示区只展示当前版本截图。
 

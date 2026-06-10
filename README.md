@@ -42,6 +42,11 @@ FocusRoom AI 是一个沉浸式 AI 自习室网页原型，面向 Study With Me�
 - Web Audio API
 - localStorage
 
+## Product & Design Context
+
+- [PRODUCT.md](PRODUCT.md)：产品定位、核心流程、已实现功能、边界和后续扩展方向。
+- [DESIGN.md](DESIGN.md)：当前视觉语言、组件设计原则、移动端原则和后续 polish 注意事项。
+
 ## Getting Started
 
 安装依赖：
